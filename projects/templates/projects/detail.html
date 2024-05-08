@@ -1,0 +1,151 @@
+{% extends "core/base.html" %}
+
+{% block main %}
+    <div class="px-6 py-6 bg-slate-300">
+        <h1 class="text-3xl mb-4">{{ project.name }}</h1>
+        <a href="#" class="py-2 px-4 bg-emerald-600 text-white inine-block">Mark as done</a>
+        <a href="{% url "projects:edit" project.id  %}" class="py-2 px-4 bg-sky-600 text-white inine-block">Edit</a>
+        <button type="button" class="py-2 px-4 bg-amber-600 text-white inine-block">Delete</button>
+        <p class="text-sm text-slate-600 my-4">{{ project.description }}</p>
+        
+        <!-- tasks -->
+        <hr class="my-4 border-slate-800">
+        <a href="{% url "projects:tasks:new_task" project.id %}" class="py-2 px-4 bg-sky-800 text-white inline-block">Add task</a>
+        <a href="{% url "projects:notes:home" project.id %}" class="py-2 px-4 bg-lime-800 text-white inline-block">View project notes 	&#40;{{ note_count }}&#41;</a>
+        <div class="mt-6 grid grid-cols-4 gap-4">
+
+            {% for task in tasks %}
+            <div class="px-6 py-6 bg-slate-200">
+                <h2 class="mb-4 text-xl">{{ task.name }}</h2>
+                <p class="text-sm text-slate-600 mb-4">{{ task.description }}</p>
+                {% if task.due_date %}
+                <p class="text-sm text-slate-600 mb-4">Due Date: {{ task.due_date|date:"D d M Y" }}</p>
+                {% endif %}
+                <div class="flex flex-row justify-between">
+                    <button class="text-center text-sky-600 bg-gray-100 py-2 px-4 rounded hover:bg-gray-200 border border-gray-300" title="Edit" onclick="openModal('editTaskModal{{ forloop.counter }}')"><i class="fas fa-edit"></i></button>
+                    <button class="text-center text-amber-600 bg-gray-100 py-2 px-4 rounded hover:bg-gray-200 border border-gray-300" title="Delete" onclick="openModal('deleteTaskModal{{ forloop.counter }}')"><i class="fas fa-trash-alt"></i></button>
+                    <form action="{% url "projects:tasks:done" project.id task.id %}" method="post">
+                        {% csrf_token %}
+                        <button class="text-center bg-gray-100 py-2 px-4 rounded hover:bg-gray-200 border border-gray-300 {% if task.done %}text-emerald-600{% else%}text-gray-400{% endif %}" 
+                        title="{% if task.done %}Completed{% else%}Mark as done{% endif %}"><i class="fas fa-check"></i></button>
+                    </form>
+                    <button class="text-center text-rose-600 bg-gray-100 py-2 px-4 rounded hover:bg-gray-200 border border-gray-300" title="Add Reminder"><i class="fas fa-bell"></i></button>
+                </div>
+            </div>
+            {% endfor %}
+
+        </div>
+    </div>
+
+    <!-- Delete Project Modal -->
+    <div id="deleteProjectModal" class="fixed hidden z-50 inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full px-4 ">
+        <div class="relative top-40 mx-auto shadow-xl rounded-md bg-white max-w-md">
+            <div class="flex justify-end p-2">
+                <button onclick="closeModal('deleteProjectModal')" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 pt-0 text-center">
+                <h3 class="text-xl font-normal text-gray-700 mt-5 mb-6">{{ project.name }}</h3>
+                <p class="text-gray-500 mb-4">This project and all its related tasks will be deleted.</p>
+                <div class="flex flex-row justify-around">
+                    <form action="{% url "projects:delete" project.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                            Confirm
+                        </button>
+                    </form>
+                    <a href="#" onclick="closeModal('deleteProjectModal')"
+                        class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Task modals-->
+    {% for task in tasks %}
+    <div id="editTaskModal{{ forloop.counter }}" class="fixed hidden z-50 inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full px-4 ">
+        <div class="relative top-10 max-w-xl mx-auto py-8 bg-slate-800 text-center">
+            <div class="flex justify-end p-2">
+                <button onclick="closeModal('editTaskModal{{ forloop.counter }}')" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"><i class="fas fa-times"></i></button>
+            </div>
+            <h2 class="text-xl text-white">Edit Task</h2>
+            <form action="{% url "projects:tasks:edit" project.id task.id %}" method="post" class="mt-6 px-8 space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="name" class="text-white">Task Name</label>
+                    <input type="text" value="{{ task.name }}" name="name" class="w-full py-4 px-6 bg-slate-500 text-white">
+                </div>
+                <div>
+                    <label for="description" class="text-white">Description</label>
+                    <textarea name="description" class="w-full py-4 px-6 bg-slate-500 text-white">{{ task.description }}</textarea>
+                </div>
+                <div>
+                    <label for="due_date" class="text-white">Due Date</label>
+                    <input type="date" name="due_date" class="w-full py-4 px-6 bg-slate-500 text-white">
+                </div>
+                <div>
+                    <button type="submit" class="py-4 px-8 bg-sky-600 text-white">Edit task</button>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+
+    <!-- Delete Task modals-->
+    {% for task in tasks %}
+    <div id="deleteTaskModal{{ forloop.counter }}" class="fixed hidden z-50 inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full px-4 ">
+        <div class="relative top-40 mx-auto shadow-xl rounded-md bg-white max-w-md">
+            <div class="flex justify-end p-2">
+                <button onclick="closeModal('deleteTaskModal{{ forloop.counter }}')" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 pt-0 text-center">
+                <h3 class="text-xl font-normal text-gray-700 mt-5 mb-6">{{ task.name }}</h3>
+                <p class="text-gray-500 mb-4">Delete this task?</p>
+                <div class="flex flex-row justify-around">
+                    <form action="{% url "projects:tasks:delete" project.id task.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                            Confirm
+                        </button>
+                    </form>
+                    <a href="#" onclick="closeModal('deleteTaskModal{{ forloop.counter }}')"
+                        class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+
+
+    
+
+<script type="text/javascript">
+    window.openModal = function(modalId) {
+        document.getElementById(modalId).style.display = 'block'
+        document.getElementsByTagName('body')[0].classList.add('overflow-y-hidden')
+    }
+
+    window.closeModal = function(modalId) {
+        document.getElementById(modalId).style.display = 'none'
+        document.getElementsByTagName('body')[0].classList.remove('overflow-y-hidden')
+    }
+
+    // Close all modals when press ESC
+    document.onkeydown = function(event) {
+        event = event || window.event;
+        if (event.keyCode === 27) {
+            document.getElementsByTagName('body')[0].classList.remove('overflow-y-hidden')
+            let modals = document.getElementsByClassName('modal');
+            Array.prototype.slice.call(modals).forEach(i => {
+                i.style.display = 'none'
+            })
+        }
+    };
+</script>
+{% endblock main %}

@@ -1,0 +1,22 @@
+{% extends "core/base.html" %}
+
+{% block main %}
+<div class="max-w-xl mx-auto py-8 bg-slate-800 text-center">
+    <h1 class="text-3xl text-white">{{ project_name }}</h1>
+    <h2 class="text-xl text-white">Create Note</h2>
+    <form action="" method="post" class="mt-6 px-8 space-y-4">
+        {% csrf_token %}
+        <div>
+            <label for="title" class="text-white">Title</label>
+            <input type="text" name="title" class="w-full py-4 px-6 bg-slate-500 text-white">
+        </div>
+        <div>
+            <label for="body" class="text-white">Body</label>
+            <textarea name="body" class="w-full py-4 px-6 bg-slate-500 text-white"></textarea>
+        </div>
+        <div>
+            <button class="py-4 px-8 bg-sky-600 text-white">Create Note</button>
+        </div>
+    </form>
+</div>
+{% endblock main %}

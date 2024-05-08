@@ -1,0 +1,100 @@
+{% extends "core/base.html" %}
+
+{% block main %}
+    <h1 class="text-3xl mb-4 hover:underline"><a href="{% url "projects:details" project.id %}">{{ project.name }}</a></h1>
+    <h2 class="mb-4 text-xl">Notes</h2>
+
+    <a href="{% url "projects:notes:new_note" project.id %}" class="py-2 px-4 bg-sky-800 text-white inline-block">New note</a>
+
+    <div class="mt-6">
+        {% for note in notes %}
+        <div class="px-6 py-6 my-3 bg-slate-200">
+            <a href="#"><h2 class="mb-4 text-xl hover:underline">{{ note.title }}</h2></a>
+            <p class="text-sm text-slate-600 mb-4">{{ note.body }}</p>
+            <div>
+                <button class="text-center text-sky-600 bg-gray-100 py-2 px-4 rounded hover:bg-gray-200 border border-gray-300" title="Edit" onclick="openModal('editNoteModal{{ forloop.counter }}')"><i class="fas fa-edit"></i></button>
+                <button class="text-center text-amber-600 bg-gray-100 py-2 px-4 rounded hover:bg-gray-200 border border-gray-300" title="Delete" onclick="openModal('deleteNoteModal{{ forloop.counter }}')"><i class="fas fa-trash-alt"></i></button>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Edit Note modals-->
+    {% for note in notes %}
+    <div id="editNoteModal{{ forloop.counter }}" class="fixed hidden z-50 inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full px-4 ">
+        <div class="relative top-10 max-w-xl mx-auto py-8 bg-slate-800 text-center">
+            <div class="flex justify-end p-2">
+                <button onclick="closeModal('editNoteModal{{ forloop.counter }}')" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"><i class="fas fa-times"></i></button>
+            </div>
+            <h2 class="text-xl text-white">Edit Note</h2>
+            <form action="{% url "projects:notes:edit" project.id note.id %}" method="post" class="mt-6 px-8 space-y-4">
+                {% csrf_token %}
+                <div>
+                    <label for="title" class="text-white">Title</label>
+                    <input type="text" value="{{ note.title }}" name="title" class="w-full py-4 px-6 bg-slate-500 text-white">
+                </div>
+                <div>
+                    <label for="body" class="text-white">Body</label>
+                    <textarea name="body" class="w-full py-4 px-6 bg-slate-500 text-white">{{ note.body }}</textarea>
+                </div>
+                <div>
+                    <button type="submit" class="py-4 px-8 bg-sky-600 text-white">Edit note</button>
+                </div>
+            </form>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    
+    <!-- Delete Note modals-->
+    {% for note in notes %}
+    <div id="deleteNoteModal{{ forloop.counter }}" class="fixed hidden z-50 inset-0 bg-gray-900 bg-opacity-60 overflow-y-auto h-full w-full px-4 ">
+        <div class="relative top-40 mx-auto shadow-xl rounded-md bg-white max-w-md">
+            <div class="flex justify-end p-2">
+                <button onclick="closeModal('deleteNoteModal{{ forloop.counter }}')" type="button" class="text-gray-400 bg-transparent hover:bg-gray-200 hover:text-gray-900 rounded-lg text-sm p-1.5 ml-auto inline-flex items-center"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="p-6 pt-0 text-center">
+                <h3 class="text-xl font-normal text-gray-700 mt-5 mb-6">{{ note.name }}</h3>
+                <p class="text-gray-500 mb-4">Delete this note?</p>
+                <div class="flex flex-row justify-around">
+                    <form action="{% url "projects:notes:delete" project.id note.id %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded">
+                            Confirm
+                        </button>
+                    </form>
+                    <a href="#" onclick="closeModal('deleteNoteModal{{ forloop.counter }}')"
+                        class="bg-red-500 hover:bg-red-700 text-white font-bold py-2 px-4 rounded">
+                        Cancel
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+
+
+<script type="text/javascript">
+    window.openModal = function(modalId) {
+        document.getElementById(modalId).style.display = 'block'
+        document.getElementsByTagName('body')[0].classList.add('overflow-y-hidden')
+    }
+
+    window.closeModal = function(modalId) {
+        document.getElementById(modalId).style.display = 'none'
+        document.getElementsByTagName('body')[0].classList.remove('overflow-y-hidden')
+    }
+
+    // Close all modals when press ESC
+    document.onkeydown = function(event) {
+        event = event || window.event;
+        if (event.keyCode === 27) {
+            document.getElementsByTagName('body')[0].classList.remove('overflow-y-hidden')
+            let modals = document.getElementsByClassName('modal');
+            Array.prototype.slice.call(modals).forEach(i => {
+                i.style.display = 'none'
+            })
+        }
+    };
+</script>
+{% endblock main %}

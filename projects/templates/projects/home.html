@@ -1,0 +1,16 @@
+{% extends "core/base.html" %}
+
+{% block main %}
+    <h1 class="text-3xl mb-4">Projects</h1>
+
+    <a href="{% url "projects:new_project" %}" class="py-2 px-4 bg-sky-800 text-white inline-block">New project</a>
+
+    <div class="mt-6 grid grid-cols-4 gap-4">
+        {% for project in projects %}
+        <div class="px-6 py-6 bg-slate-200">
+            <a href="{% url "projects:details" project.id %}"><h2 class="mb-4 text-xl hover:underline">{{ project.name }}</h2></a>
+            <p class="text-sm text-slate-600 mb-4">{{ project.description }}</p>
+        </div>
+        {% endfor %}
+    </div>
+{% endblock main %}
